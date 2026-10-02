@@ -1293,6 +1293,43 @@ void ad9361_device_t::_reprogram_gains()
  * tune the RX or TX VCO. */
 double ad9361_device_t::_tune_helper(direction_t direction, const double value)
 {
+    // External LO mode:
+    // physical LO is supplied externally.
+    // Do NOT program the internal RFPLL.
+    //
+    if (_external_lo_enabled) {
+        if (direction == RX) {
+            _req_rx_freq = value;
+            _rx_freq     = value;
+
+            UHD_LOGGER_INFO("AD9361")
+                << boost::format(
+                       "RX EXT LO: logical RF = %.6f MHz, "
+                       "required external LO = %.6f MHz")
+                       % (value / 1e6)
+                       % (2.0 * value / 1e6);
+
+            return value;
+        }
+
+        if (direction == TX) {
+            _req_tx_freq = value;
+            _tx_freq     = value;
+
+            UHD_LOGGER_INFO("AD9361")
+                << boost::format(
+                       "TX EXT LO: logical RF = %.6f MHz, "
+                       "required external LO = %.6f MHz")
+                       % (value / 1e6)
+                       % (2.0 * value / 1e6);
+
+            return value;
+        }
+
+        throw uhd::runtime_error(
+            "[ad9361_device_t] EXT LO invalid direction");
+    }
+
     /* The RFPLL runs from 6 GHz - 12 GHz */
     const double fref   = 80e6;
     const int modulus   = 8388593;
@@ -2109,6 +2146,33 @@ double ad9361_device_t::tune(direction_t direction, const double value)
         last_cal_freq = _last_tx_cal_freq;
     } else {
         throw uhd::runtime_error("[ad9361_device_t] [tune] INVALID_CODE_PATH");
+    }
+
+    // External LO mode:
+    // Frequency is controlled by the external generator.
+    // UHD only keeps track of the logical RF frequency.
+    //
+    if (_external_lo_enabled) {
+        if (direction == RX) {
+            _req_rx_freq = value;
+            _rx_freq     = value;
+        }
+        else if (direction == TX) {
+            _req_tx_freq = value;
+            _tx_freq     = value;
+        }
+        else {
+            throw uhd::runtime_error(
+                "[ad9361_device_t] EXT LO invalid direction");
+        }
+
+        UHD_LOGGER_INFO("AD9361")
+            << boost::format(
+                   "EXT LO tune: RF=%.6f MHz, external source=%.6f MHz")
+                   % (value / 1e6)
+                   % (2.0 * value / 1e6);
+
+        return value;
     }
 
     /* If we aren't already in the ALERT state, we will need to return to
@@ -3078,6 +3142,116 @@ void ad9361_device_t::mcs_finish()
         << std::hex << unsigned(check001)
         << " REG047=0x"
         << unsigned(check047));
+}
+
+void ad9361_device_t::set_external_lo(bool enable)
+{
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
+
+    constexpr uint8_t RX_VCO_DIV_MASK = 0x07; // 0x005 D2:D0
+    constexpr uint8_t TX_VCO_DIV_MASK = 0x70; // 0x005 D6:D4
+
+    constexpr uint8_t RX_EXT_VCO_BUFFER_PD = (1u << 5); // 0x057 D5
+    constexpr uint8_t TX_EXT_VCO_BUFFER_PD = (1u << 4); // 0x057 D4
+
+    if (!enable) {
+        throw uhd::runtime_error(
+            "Switching EXT LO -> internal LO is not implemented yet");
+    }
+
+    //
+    // 1. RFPLL divider -> external LO mode (divider value 7)
+    //
+    uint8_t reg005 = _io_iface->peek8(0x005);
+
+    reg005 &= ~(RX_VCO_DIV_MASK | TX_VCO_DIV_MASK);
+    reg005 |= 0x07; // RX divider = 7
+    reg005 |= 0x70; // TX divider = 7
+
+    _io_iface->poke8(0x005, reg005);
+
+    // Keep software shadow consistent.
+    _regs.vcodivs = reg005;
+
+    //
+    // 2. Power down internal RX/TX synthesizer VCO portions.
+    //
+    // ADI Linux driver sets VCO ALC + PTAT + VCO power-down bits.
+    //
+    uint8_t reg050 = _io_iface->peek8(0x050);
+    uint8_t reg051 = _io_iface->peek8(0x051);
+
+    // D3 = VCO ALC PD
+    // D2 = PTAT PD
+    // D1 = VCO PD
+    //
+    // Preserve all unrelated bits.
+    reg050 |= 0x0E;
+    reg051 |= 0x0E;
+
+    _io_iface->poke8(0x050, reg050);
+    _io_iface->poke8(0x051, reg051);
+
+    //
+    // 3. Enable RX_EXT_LO_IN and TX_EXT_LO_IN buffers.
+    //
+    // In 0x057 these are active-high POWER DOWN bits.
+    // Therefore clear them.
+    //
+    uint8_t reg057 = _io_iface->peek8(0x057);
+
+    reg057 &= ~RX_EXT_VCO_BUFFER_PD;
+    reg057 &= ~TX_EXT_VCO_BUFFER_PD;
+
+    _io_iface->poke8(0x057, reg057);
+
+    //
+    // 4. LO generator power mode.
+    //
+    // Values used by ADI external-LO configuration:
+    //
+    uint8_t reg261 = _io_iface->peek8(0x261);
+    uint8_t reg2a1 = _io_iface->peek8(0x2A1);
+
+    reg261 = (reg261 & 0x0F) | 0x30;
+    reg2a1 = (reg2a1 & 0x0F) | 0xF0;
+
+    _io_iface->poke8(0x261, reg261);
+    _io_iface->poke8(0x2A1, reg2a1);
+
+    //
+    // 5. ENSM synthesizer control.
+    //
+    uint8_t reg015 = _io_iface->peek8(0x015);
+
+    // D6 = Power Down RX Synth
+    // D5 = Power Down TX Synth
+    reg015 |= 0x60;
+
+    _io_iface->poke8(0x015, reg015);
+
+    _external_lo_enabled = true;
+
+    //
+    // Readback
+    //
+    UHD_LOGGER_INFO("AD9361")
+        << boost::format(
+               "EXT LO enabled: "
+               "005=0x%02X "
+               "015=0x%02X "
+               "050=0x%02X "
+               "051=0x%02X "
+               "057=0x%02X "
+               "261=0x%02X "
+               "2A1=0x%02X")
+               % int(_io_iface->peek8(0x005))
+               % int(_io_iface->peek8(0x015))
+               % int(_io_iface->peek8(0x050))
+               % int(_io_iface->peek8(0x051))
+               % int(_io_iface->peek8(0x057))
+               % int(_io_iface->peek8(0x261))
+               % int(_io_iface->peek8(0x2A1));
 }
 
 

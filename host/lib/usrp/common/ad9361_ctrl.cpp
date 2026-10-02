@@ -300,6 +300,12 @@ public:
         _device.mcs_finish();
     }
 
+    void set_external_lo(bool enable) override
+    {
+        std::lock_guard<std::mutex> lock(_mutex);
+        _device.set_external_lo(enable);
+    }
+
 private:
     static ad9361_device_t::direction_t _get_direction_from_antenna(
         const std::string& antenna)

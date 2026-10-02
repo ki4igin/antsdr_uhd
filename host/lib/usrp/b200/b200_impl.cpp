@@ -714,6 +714,25 @@ b200_impl::b200_impl(
                     throw uhd::value_error("Invalid AD9361 MCS command");
                 }
             });
+        _tree->create<int>(mb_path / "lo" / "external")
+            .set(0)
+            .add_coerced_subscriber([this](const int cmd) {
+                switch (cmd) {
+                case 0:
+                    break;
+
+                case 1:
+                    UHD_LOGGER_INFO("B200")
+                        << "AD9361 external LO ENABLE";
+
+                    _codec_ctrl->set_external_lo(true);
+                    break;
+
+                default:
+                    throw uhd::value_error(
+                        "Invalid AD9361 external LO command");
+                }
+            });
     }
 
     ////////////////////////////////////////////////////////////////////

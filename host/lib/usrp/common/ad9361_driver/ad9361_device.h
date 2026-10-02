@@ -253,6 +253,7 @@ public:
     void mcs_stage1();
     void mcs_stage2();
     void mcs_finish();
+    void set_external_lo(bool enable);
 
     //Constants
     static const double AD9361_MAX_GAIN;
@@ -363,6 +364,8 @@ private:    //Members
     >;
     std::map<std::string, filter_tuple> _rx_filters;
     std::map<std::string, filter_tuple> _tx_filters;
+
+    bool _external_lo_enabled = false;
 
 };
 
