@@ -246,8 +246,13 @@ public:
     filter_info_base::sptr get_filter(direction_t direction, chain_t chain, const std::string &name);
 
     void set_filter(direction_t direction, chain_t chain, const std::string &name, filter_info_base::sptr filter);
-
+    
     std::vector<std::string> get_filter_names(direction_t direction);
+    
+    // AD9361 Multi-Chip Synchronization
+    void mcs_stage1();
+    void mcs_stage2();
+    void mcs_finish();
 
     //Constants
     static const double AD9361_MAX_GAIN;

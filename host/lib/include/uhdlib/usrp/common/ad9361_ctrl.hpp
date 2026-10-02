@@ -158,6 +158,11 @@ public:
         const filter_info_base::sptr) = 0;
 
     virtual void output_digital_test_tone(bool enb) = 0;
+
+    //! AD9361 Multi-Chip Synchronization
+    virtual void mcs_stage1() {}
+    virtual void mcs_stage2() {}
+    virtual void mcs_finish() {}
 };
 
 }} // namespace uhd::usrp

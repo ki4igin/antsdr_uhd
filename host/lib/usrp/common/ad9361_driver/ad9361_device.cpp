@@ -2982,4 +2982,103 @@ void ad9361_device_t::_set_filter_lp_tia_sec(
     }
 }
 
+constexpr uint32_t REG_MCS_CTRL = 0x001;
+constexpr uint32_t REG_BBPLL    = 0x047;
+
+constexpr uint8_t MCS_BB_ENABLE           = (1u << 0);
+constexpr uint8_t MCS_DIGITAL_CLK_ENABLE  = (1u << 1);
+constexpr uint8_t MCS_BBPLL_ENABLE        = (1u << 2);
+constexpr uint8_t MCS_REFCLK_SCALE_ENABLE = (1u << 7);
+
+void ad9361_device_t::mcs_stage1()
+{
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
+
+    uint8_t reg001 = _io_iface->peek8(REG_MCS_CTRL);
+    uint8_t reg047 = _io_iface->peek8(REG_BBPLL);
+
+    // Stage 1:
+    // MCS BBPLL Enable = 1
+    // MCS Digital Clocks Enable = 0
+    // MCS BB Enable = 1
+    // MCS Refclk Scale En = 1
+
+    reg001 &= ~MCS_DIGITAL_CLK_ENABLE;
+    reg001 |= MCS_BBPLL_ENABLE | MCS_BB_ENABLE;
+
+    reg047 |= MCS_REFCLK_SCALE_ENABLE;
+
+    _io_iface->poke8(REG_MCS_CTRL, reg001);
+    _io_iface->poke8(REG_BBPLL, reg047);
+
+    const uint8_t check001 = _io_iface->peek8(REG_MCS_CTRL);
+    const uint8_t check047 = _io_iface->peek8(REG_BBPLL);
+
+    UHD_LOG_INFO("AD9361",
+        "MCS stage1: REG001=0x"
+        << std::hex << unsigned(check001)
+        << " REG047=0x"
+        << unsigned(check047));
+
+}
+
+void ad9361_device_t::mcs_stage2()
+{
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
+
+    uint8_t reg001 = _io_iface->peek8(REG_MCS_CTRL);
+    uint8_t reg047 = _io_iface->peek8(REG_BBPLL);
+
+    // Stage 2:
+    // MCS BBPLL Enable = 0
+    // MCS Digital Clocks Enable = 1
+    // MCS BB Enable = 1
+    // MCS Refclk Scale En = 0
+
+    reg001 &= ~MCS_BBPLL_ENABLE;
+    reg001 |= MCS_DIGITAL_CLK_ENABLE | MCS_BB_ENABLE;
+
+    reg047 &= ~MCS_REFCLK_SCALE_ENABLE;
+
+    _io_iface->poke8(REG_MCS_CTRL, reg001);
+    _io_iface->poke8(REG_BBPLL, reg047);
+
+    const uint8_t check001 = _io_iface->peek8(REG_MCS_CTRL);
+    const uint8_t check047 = _io_iface->peek8(REG_BBPLL);
+
+    UHD_LOG_INFO("AD9361",
+        "MCS stage2: REG001=0x"
+        << std::hex << unsigned(check001)
+        << " REG047=0x"
+        << unsigned(check047));
+}
+
+void ad9361_device_t::mcs_finish()
+{
+    std::lock_guard<std::recursive_mutex> lock(_mutex);
+
+    uint8_t reg001 = _io_iface->peek8(REG_MCS_CTRL);
+    uint8_t reg047 = _io_iface->peek8(REG_BBPLL);
+
+    // Disable BB MCS synchronization logic.
+    reg001 &= ~(MCS_BBPLL_ENABLE
+              | MCS_DIGITAL_CLK_ENABLE
+              | MCS_BB_ENABLE);
+
+    reg047 &= ~MCS_REFCLK_SCALE_ENABLE;
+
+    _io_iface->poke8(REG_MCS_CTRL, reg001);
+    _io_iface->poke8(REG_BBPLL, reg047);
+
+    const uint8_t check001 = _io_iface->peek8(REG_MCS_CTRL);
+    const uint8_t check047 = _io_iface->peek8(REG_BBPLL);
+
+    UHD_LOG_INFO("AD9361",
+        "MCS stage finish: REG001=0x"
+        << std::hex << unsigned(check001)
+        << " REG047=0x"
+        << unsigned(check047));
+}
+
+
 }} // namespace uhd::usrp

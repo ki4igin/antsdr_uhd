@@ -684,6 +684,39 @@ b200_impl::b200_impl(
     _codec_ctrl = ad9361_ctrl::make_spi(client_settings, _spi_iface, AD9361_SLAVENO);
 
     ////////////////////////////////////////////////////////////////////
+    // AD9361 Multi-Chip Synchronization control
+    ////////////////////////////////////////////////////////////////////
+    if (true) {
+        _tree->create<int>(mb_path / "mcs" / "command")
+            .set(0)
+            .add_coerced_subscriber([this](const int cmd) {
+
+                switch (cmd) {
+                case 0:
+                    break;
+
+                case 1:
+                    UHD_LOGGER_INFO("B200") << "AD9361 MCS stage 1";
+                    _codec_ctrl->mcs_stage1();
+                    break;
+
+                case 2:
+                    UHD_LOGGER_INFO("B200") << "AD9361 MCS stage 2";
+                    _codec_ctrl->mcs_stage2();
+                    break;
+
+                case 3:
+                    UHD_LOGGER_INFO("B200") << "AD9361 MCS finish";
+                    _codec_ctrl->mcs_finish();
+                    break;
+
+                default:
+                    throw uhd::value_error("Invalid AD9361 MCS command");
+                }
+            });
+    }
+
+    ////////////////////////////////////////////////////////////////////
     // create codec control objects
     ////////////////////////////////////////////////////////////////////
     {

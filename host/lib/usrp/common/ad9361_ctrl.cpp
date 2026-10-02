@@ -282,6 +282,24 @@ public:
         _device.digital_test_tone(enb);
     }
 
+    void mcs_stage1() override
+    {
+        std::lock_guard<std::mutex> lock(_mutex);
+        _device.mcs_stage1();
+    }
+
+    void mcs_stage2() override
+    {
+        std::lock_guard<std::mutex> lock(_mutex);
+        _device.mcs_stage2();
+    }
+
+    void mcs_finish() override
+    {
+        std::lock_guard<std::mutex> lock(_mutex);
+        _device.mcs_finish();
+    }
+
 private:
     static ad9361_device_t::direction_t _get_direction_from_antenna(
         const std::string& antenna)
