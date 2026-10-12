@@ -306,6 +306,16 @@ public:
         _device.set_external_lo(enable);
     }
 
+    void ensm_to_alert() override
+    {
+        _device.ensm_to_alert();
+    }
+
+    void ensm_to_fdd() override
+    {
+        _device.ensm_to_fdd();
+    }
+
 private:
     static ad9361_device_t::direction_t _get_direction_from_antenna(
         const std::string& antenna)

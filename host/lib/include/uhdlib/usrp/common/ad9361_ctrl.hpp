@@ -164,6 +164,9 @@ public:
     virtual void mcs_stage2() {}
     virtual void mcs_finish() {}
     virtual void set_external_lo(bool /*enable*/) {}
+
+    virtual void ensm_to_alert() {}
+    virtual void ensm_to_fdd() {}
 };
 
 }} // namespace uhd::usrp

@@ -255,6 +255,9 @@ public:
     void mcs_finish();
     void set_external_lo(bool enable);
 
+    void ensm_to_alert();
+    void ensm_to_fdd();
+
     //Constants
     static const double AD9361_MAX_GAIN;
     static const double AD9361_MAX_CLOCK_RATE;

@@ -3254,5 +3254,53 @@ void ad9361_device_t::set_external_lo(bool enable)
                % int(_io_iface->peek8(0x2A1));
 }
 
+void ad9361_device_t::ensm_to_alert()
+{
+    const uint8_t state = _io_iface->peek8(0x017) & 0x0F;
+
+    if (state != 0x0A) {
+        throw uhd::runtime_error(
+            "ENSM: expected FDD before transition to ALERT");
+    }
+
+    // FDD -> FDD Flush -> ALERT
+    _io_iface->poke8(0x014, 0x01);
+
+    for (int i = 0; i < 10000; i++) {
+        const uint8_t current = _io_iface->peek8(0x017) & 0x0F;
+
+        if (current == 0x05) {
+            return;
+        }
+    }
+
+    throw uhd::runtime_error(
+        "ENSM: timeout waiting for ALERT");
+}
+
+void ad9361_device_t::ensm_to_fdd()
+{
+    const uint8_t state = _io_iface->peek8(0x017) & 0x0F;
+
+    if (state != 0x05) {
+        throw uhd::runtime_error(
+            "ENSM: expected ALERT before transition to FDD");
+    }
+
+    // ALERT -> FDD
+    _io_iface->poke8(0x014, 0x21);
+
+    for (int i = 0; i < 10000; i++) {
+        const uint8_t current = _io_iface->peek8(0x017) & 0x0F;
+
+        if (current == 0x0A) {
+            return;
+        }
+    }
+
+    throw uhd::runtime_error(
+        "ENSM: timeout waiting for FDD");
+}
+
 
 }} // namespace uhd::usrp

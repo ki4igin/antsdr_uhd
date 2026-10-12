@@ -710,6 +710,16 @@ b200_impl::b200_impl(
                     _codec_ctrl->mcs_finish();
                     break;
 
+                case 4:
+                    UHD_LOGGER_INFO("B200") << "AD9361 ENSM -> ALERT";
+                    _codec_ctrl->ensm_to_alert();
+                    break;
+
+                case 5:
+                    UHD_LOGGER_INFO("B200") << "AD9361 ENSM -> FDD";
+                    _codec_ctrl->ensm_to_fdd();
+                    break;
+
                 default:
                     throw uhd::value_error("Invalid AD9361 MCS command");
                 }
