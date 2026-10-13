@@ -3302,5 +3302,49 @@ void ad9361_device_t::ensm_to_fdd()
         "ENSM: timeout waiting for FDD");
 }
 
+void ad9361_device_t::ensm_enable_external()
+{
+    constexpr uint8_t PIN_CTRL    = 1u << 4;
+    constexpr uint8_t LEVEL_MODE  = 1u << 3;
+    constexpr uint8_t FORCE_TX    = 1u << 5;
+    constexpr uint8_t FORCE_RX    = 1u << 6;
+    constexpr uint8_t FORCE_ALERT = 1u << 2;
+    constexpr uint8_t TO_ALERT    = 1u << 0;
+
+    // Важно: перед вызовом внешний ENABLE должен быть LOW.
+
+    const uint8_t state = _io_iface->peek8(0x017) & 0x0F;
+
+    if (state != 0x05) {
+        throw uhd::runtime_error(
+            "ENSM: enter ALERT before enabling external control");
+    }
+
+    // Сохраняем FDD.
+    uint8_t reg013 = _io_iface->peek8(0x013);
+    reg013 |= 0x01;
+    _io_iface->poke8(0x013, reg013);
+
+    // Не включаем FDD Independent Control.
+    uint8_t reg015 = _io_iface->peek8(0x015);
+    reg015 &= ~(1u << 7);
+    _io_iface->poke8(0x015, reg015);
+
+    uint8_t reg014 = _io_iface->peek8(0x014);
+
+    reg014 &= ~(FORCE_TX | FORCE_RX | FORCE_ALERT);
+    reg014 |= PIN_CTRL | LEVEL_MODE | TO_ALERT;
+
+    _io_iface->poke8(0x014, reg014);
+
+    const uint8_t check = _io_iface->peek8(0x014);
+
+    if ((check & (PIN_CTRL | LEVEL_MODE | TO_ALERT))
+        != (PIN_CTRL | LEVEL_MODE | TO_ALERT)) {
+        throw uhd::runtime_error(
+            "ENSM: failed to enable external pin control");
+    }
+}
+
 
 }} // namespace uhd::usrp

@@ -719,6 +719,10 @@ b200_impl::b200_impl(
                     UHD_LOGGER_INFO("B200") << "AD9361 ENSM -> FDD";
                     _codec_ctrl->ensm_to_fdd();
                     break;
+                case 6:
+                    UHD_LOGGER_INFO("B200") << "AD9361 ENSM external pin control enabled";
+                    _codec_ctrl->ensm_enable_external();
+                    break;
 
                 default:
                     throw uhd::value_error("Invalid AD9361 MCS command");

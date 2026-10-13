@@ -257,6 +257,7 @@ public:
 
     void ensm_to_alert();
     void ensm_to_fdd();
+    void ensm_enable_external();
 
     //Constants
     static const double AD9361_MAX_GAIN;

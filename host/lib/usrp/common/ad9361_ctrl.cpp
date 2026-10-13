@@ -316,6 +316,11 @@ public:
         _device.ensm_to_fdd();
     }
 
+    void ensm_enable_external() override
+    {
+        _device.ensm_enable_external();
+    }
+
 private:
     static ad9361_device_t::direction_t _get_direction_from_antenna(
         const std::string& antenna)

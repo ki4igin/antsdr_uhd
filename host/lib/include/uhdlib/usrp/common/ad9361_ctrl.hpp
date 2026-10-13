@@ -167,6 +167,8 @@ public:
 
     virtual void ensm_to_alert() {}
     virtual void ensm_to_fdd() {}
+    virtual void ensm_enable_external() {}
+
 };
 
 }} // namespace uhd::usrp
