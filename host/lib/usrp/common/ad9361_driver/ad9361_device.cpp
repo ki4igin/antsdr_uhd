@@ -3346,5 +3346,20 @@ void ad9361_device_t::ensm_enable_external()
     }
 }
 
+uint8_t ad9361_device_t::ensm_get_state()
+{
+    const uint8_t reg014 = _io_iface->peek8(0x014);
+    const uint8_t reg015 = _io_iface->peek8(0x015);
+    const uint8_t reg017 = _io_iface->peek8(0x017);
+
+    UHD_LOGGER_INFO("AD9361")
+        << "ENSM: REG014=0x" << std::hex << int(reg014)
+        << " REG015=0x" << int(reg015)
+        << " REG017=0x" << int(reg017)
+        << std::dec;
+
+    return reg017 & 0x0F;
+}
+
 
 }} // namespace uhd::usrp

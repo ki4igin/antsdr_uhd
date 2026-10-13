@@ -321,6 +321,11 @@ public:
         _device.ensm_enable_external();
     }
 
+    uint8_t ensm_get_state() override
+    {
+        return _device.ensm_get_state();
+    }
+
 private:
     static ad9361_device_t::direction_t _get_direction_from_antenna(
         const std::string& antenna)

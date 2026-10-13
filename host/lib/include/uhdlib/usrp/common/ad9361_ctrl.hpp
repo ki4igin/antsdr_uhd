@@ -168,6 +168,10 @@ public:
     virtual void ensm_to_alert() {}
     virtual void ensm_to_fdd() {}
     virtual void ensm_enable_external() {}
+    virtual uint8_t ensm_get_state()
+    {
+        return 0xFF;
+    }
 
 };
 

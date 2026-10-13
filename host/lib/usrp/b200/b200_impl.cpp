@@ -728,6 +728,10 @@ b200_impl::b200_impl(
                     throw uhd::value_error("Invalid AD9361 MCS command");
                 }
             });
+        _tree->create<int>("/mboards/0/ensm/state")
+            .set_publisher([this]() -> int {
+                return static_cast<int>(_codec_ctrl->ensm_get_state());
+            });
         _tree->create<int>(mb_path / "lo" / "external")
             .set(0)
             .add_coerced_subscriber([this](const int cmd) {
