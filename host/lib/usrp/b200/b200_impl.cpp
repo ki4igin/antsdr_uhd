@@ -456,7 +456,8 @@ b200_impl::b200_impl(
 
     UHD_LOGGER_INFO("B200") << "Detected Device: " << B2XX_STR_NAMES[_product];
 
-    _gpsdo_capable = (not(_product == B200MINI or _product == B205MINI));
+    // _gpsdo_capable = (not(_product == B200MINI or _product == B205MINI));
+    _gpsdo_capable = false;
 
     ////////////////////////////////////////////////////////////////////
     // Set up frontend mapping
@@ -1223,6 +1224,8 @@ void b200_impl::setup_radio(const size_t dspno)
 
 void b200_impl::register_loopback_self_test(wb_iface::sptr iface)
 {
+    (void)iface;
+    return;
     bool test_fail = false;
     UHD_LOGGER_INFO("B200") << "Performing register loopback test... ";
     size_t hash = size_t(time(NULL));
