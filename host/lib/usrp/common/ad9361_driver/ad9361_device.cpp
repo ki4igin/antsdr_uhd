@@ -1302,7 +1302,7 @@ double ad9361_device_t::_tune_helper(direction_t direction, const double value)
             _req_rx_freq = value;
             _rx_freq     = value;
 
-            UHD_LOGGER_INFO("AD9361")
+            UHD_LOGGER_DEBUG("AD9361")
                 << boost::format(
                        "RX EXT LO: logical RF = %.6f MHz, "
                        "required external LO = %.6f MHz")
@@ -1316,7 +1316,7 @@ double ad9361_device_t::_tune_helper(direction_t direction, const double value)
             _req_tx_freq = value;
             _tx_freq     = value;
 
-            UHD_LOGGER_INFO("AD9361")
+            UHD_LOGGER_DEBUG("AD9361")
                 << boost::format(
                        "TX EXT LO: logical RF = %.6f MHz, "
                        "required external LO = %.6f MHz")
@@ -2166,7 +2166,7 @@ double ad9361_device_t::tune(direction_t direction, const double value)
                 "[ad9361_device_t] EXT LO invalid direction");
         }
 
-        UHD_LOGGER_INFO("AD9361")
+        UHD_LOGGER_DEBUG("AD9361")
             << boost::format(
                    "EXT LO tune: RF=%.6f MHz, external source=%.6f MHz")
                    % (value / 1e6)
@@ -3235,7 +3235,7 @@ void ad9361_device_t::set_external_lo(bool enable)
     //
     // Readback
     //
-    UHD_LOGGER_INFO("AD9361")
+    UHD_LOGGER_DEBUG("AD9361")
         << boost::format(
                "EXT LO enabled: "
                "005=0x%02X "
@@ -3352,7 +3352,7 @@ uint8_t ad9361_device_t::ensm_get_state()
     const uint8_t reg015 = _io_iface->peek8(0x015);
     const uint8_t reg017 = _io_iface->peek8(0x017);
 
-    UHD_LOGGER_INFO("AD9361")
+    UHD_LOGGER_DEBUG("AD9361")
         << "ENSM: REG014=0x" << std::hex << int(reg014)
         << " REG015=0x" << int(reg015)
         << " REG017=0x" << int(reg017)

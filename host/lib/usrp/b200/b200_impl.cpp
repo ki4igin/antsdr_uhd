@@ -697,31 +697,31 @@ b200_impl::b200_impl(
                     break;
 
                 case 1:
-                    UHD_LOGGER_INFO("B200") << "AD9361 MCS stage 1";
+                    UHD_LOGGER_DEBUG("B200") << "AD9361 MCS stage 1";
                     _codec_ctrl->mcs_stage1();
                     break;
 
                 case 2:
-                    UHD_LOGGER_INFO("B200") << "AD9361 MCS stage 2";
+                    UHD_LOGGER_DEBUG("B200") << "AD9361 MCS stage 2";
                     _codec_ctrl->mcs_stage2();
                     break;
 
                 case 3:
-                    UHD_LOGGER_INFO("B200") << "AD9361 MCS finish";
+                    UHD_LOGGER_DEBUG("B200") << "AD9361 MCS finish";
                     _codec_ctrl->mcs_finish();
                     break;
 
                 case 4:
-                    UHD_LOGGER_INFO("B200") << "AD9361 ENSM -> ALERT";
+                    UHD_LOGGER_DEBUG("B200") << "AD9361 ENSM -> ALERT";
                     _codec_ctrl->ensm_to_alert();
                     break;
 
                 case 5:
-                    UHD_LOGGER_INFO("B200") << "AD9361 ENSM -> FDD";
+                    UHD_LOGGER_DEBUG("B200") << "AD9361 ENSM -> FDD";
                     _codec_ctrl->ensm_to_fdd();
                     break;
                 case 6:
-                    UHD_LOGGER_INFO("B200") << "AD9361 ENSM external pin control enabled";
+                    UHD_LOGGER_DEBUG("B200") << "AD9361 ENSM external pin control enabled";
                     _codec_ctrl->ensm_enable_external();
                     break;
 
