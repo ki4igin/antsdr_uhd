@@ -456,8 +456,8 @@ b200_impl::b200_impl(
 
     UHD_LOGGER_INFO("B200") << "Detected Device: " << B2XX_STR_NAMES[_product];
 
-    // _gpsdo_capable = (not(_product == B200MINI or _product == B205MINI));
-    _gpsdo_capable = false;
+    _gpsdo_capable = (not(_product == B200MINI or _product == B205MINI));
+   // _gpsdo_capable = false;
 
     ////////////////////////////////////////////////////////////////////
     // Set up frontend mapping
@@ -568,7 +568,7 @@ b200_impl::b200_impl(
     ////////////////////////////////////////////////////////////////////
     // Create the GPSDO control
     ////////////////////////////////////////////////////////////////////
-    if (_gpsdo_capable) {
+    if (false && _gpsdo_capable) {
         if ((_local_ctrl->peek32(RB32_CORE_STATUS) & 0xff) != B200_GPSDO_ST_NONE) {
             UHD_LOGGER_INFO("B200") << "Detecting internal GPSDO.... " << std::flush;
             try {
