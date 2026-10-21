@@ -37,3 +37,4 @@ host/build
 *.su
 
 build/
+build*/
