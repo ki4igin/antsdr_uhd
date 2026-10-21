@@ -741,7 +741,7 @@ b200_impl::b200_impl(
                     break;
 
                 case 1:
-                    UHD_LOGGER_INFO("B200")
+                    UHD_LOGGER_DEBUG("B200")
                         << "AD9361 external LO ENABLE";
 
                     _codec_ctrl->set_external_lo(true);

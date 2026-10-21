@@ -3078,7 +3078,7 @@ void ad9361_device_t::mcs_stage1()
     const uint8_t check001 = _io_iface->peek8(REG_MCS_CTRL);
     const uint8_t check047 = _io_iface->peek8(REG_BBPLL);
 
-    UHD_LOG_INFO("AD9361",
+    UHD_LOG_DEBUG("AD9361",
         "MCS stage1: REG001=0x"
         << std::hex << unsigned(check001)
         << " REG047=0x"
@@ -3110,7 +3110,7 @@ void ad9361_device_t::mcs_stage2()
     const uint8_t check001 = _io_iface->peek8(REG_MCS_CTRL);
     const uint8_t check047 = _io_iface->peek8(REG_BBPLL);
 
-    UHD_LOG_INFO("AD9361",
+    UHD_LOG_DEBUG("AD9361",
         "MCS stage2: REG001=0x"
         << std::hex << unsigned(check001)
         << " REG047=0x"
@@ -3137,7 +3137,7 @@ void ad9361_device_t::mcs_finish()
     const uint8_t check001 = _io_iface->peek8(REG_MCS_CTRL);
     const uint8_t check047 = _io_iface->peek8(REG_BBPLL);
 
-    UHD_LOG_INFO("AD9361",
+    UHD_LOG_DEBUG("AD9361",
         "MCS stage finish: REG001=0x"
         << std::hex << unsigned(check001)
         << " REG047=0x"
